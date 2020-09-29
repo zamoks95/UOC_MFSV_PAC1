@@ -12,11 +12,9 @@ export default function Tutorial5() {
   var yRotation = 0.0;
   var zRotation = 0.0;
 
-  // Initialize Dice
+  // Initialize Objects
   var boxMesh;
-
-  // Initialize Sin
-  let degrees = 0;
+  let earthMesh;
 
   // Initialize Scene
   initializeScene();
@@ -47,9 +45,14 @@ export default function Tutorial5() {
     // Create Box - Start
     var boxGeometry = new THREE.BoxGeometry(2.0, 2.0, 2.0);
     boxMesh = new THREE.Mesh(boxGeometry, diceFaceMaterial());
-    boxMesh.position.set(0.0, 0.0, 4.0);
+    boxMesh.position.set(2.0, 0.0, 4.0);
     scene.add(boxMesh);
     // Create Box - End
+
+    // Add Icosahedron to Scence
+    earthMesh = earth();
+    earthMesh.position.set(-2.0, 0.0, 4.0);
+    scene.add(earthMesh);
   }
   // Initialize Scene - End
 
@@ -63,21 +66,11 @@ export default function Tutorial5() {
     zRotation += 0.04;
 
     boxMesh.rotation.set(xRotation, yRotation, zRotation);
+    earthMesh.rotation.set(xRotation/5, yRotation/5, zRotation/5);
     requestAnimationFrame(animateScene);
     renderScene();
   }
   // Render Scene - End
-
-  // Calculate Sinus - Start
-  function getSinus() {
-    if (degrees > 360) {
-      degrees = 0;
-    } else {
-      degrees += 1;
-    }
-    return Math.sin((degrees * Math.PI) / 180);
-  }
-  // Calculate Sinus - End
 
   // Window Resize Handler - Start
   window.addEventListener("resize", onWindowResize, false);
@@ -90,8 +83,27 @@ export default function Tutorial5() {
   // Window Resize Handler - End
 }
 
+// Earth - Start
+function earth() {
+  var earthGeometry = new THREE.OctahedronGeometry( 1.5, 2 );
+  return new THREE.Mesh(earthGeometry, earthFaceMaterial());
+}
+// Earth - End
+
+// earthFaceMaterial - Start
+function earthFaceMaterial() {
+  let textureLoader = new THREE.TextureLoader();
+  const materials = [
+    new THREE.MeshBasicMaterial({
+      map: textureLoader.load("/src/images/mapaTerra.png"),
+    }),
+    
+  ];
+  return new THREE.MeshFaceMaterial(materials);
+}
+// EarthFaceMaterial - End
 // diceFaceMaterial - Start
-function diceFaceMaterial(){
+function diceFaceMaterial() {
   let textureLoader = new THREE.TextureLoader();
   const materials = [
     new THREE.MeshBasicMaterial({

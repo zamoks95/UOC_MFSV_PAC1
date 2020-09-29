@@ -8,6 +8,8 @@ import {
   Tutorial4,
   Tutorial5,
   Tutorial6,
+  Tutorial7,
+  Tutorial8,
 } from "./tutorials";
 
 if (process.env.NODE_ENV === "development") {
@@ -50,6 +52,12 @@ function startTutorial(id) {
       break;
     case "6":
       Tutorial6();
+      break;
+    case "7":
+      Tutorial7();
+      break;
+    case "8":
+      Tutorial8();
       break;
     default:
       Tutorial1();

@@ -7,16 +7,17 @@ export default function Tutorial6() {
   let camera;
 
   // Initialize Objects
-  // x, y and z rotation
+
   var xRotation = 0.0;
   var yRotation = 0.0;
-  var zRotation = 0.0;
+  var xSpeed = 0.0;
+  var ySpeed = 0.0;
+  var zTranslation = 4.0;
 
-  // Initialize Dice
+  // Initialize Objects
   var boxMesh;
-
-  // Initialize Sin
-  let degrees = 0;
+  var lightIsOn = true;
+  let directionalLight;
 
   // Initialize Scene
   initializeScene();
@@ -44,12 +45,15 @@ export default function Tutorial6() {
     camera.lookAt(scene.position);
     scene.add(camera);
 
-    // Create Box - Start
     var boxGeometry = new THREE.BoxGeometry(2.0, 2.0, 2.0);
-    boxMesh = new THREE.Mesh(boxGeometry, diceFaceMaterial());
+    boxMesh = new THREE.Mesh(boxGeometry, boxMaterial(lightIsOn));
     boxMesh.position.set(0.0, 0.0, 4.0);
     scene.add(boxMesh);
     // Create Box - End
+
+    directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+    directionalLight.position.set(0.0, 0.0, 1.0);
+    scene.add(directionalLight);
   }
   // Initialize Scene - End
 
@@ -58,27 +62,59 @@ export default function Tutorial6() {
     renderer.render(scene, camera);
   }
   function animateScene() {
-    xRotation += 0.03;
-    yRotation += 0.02;
-    zRotation += 0.04;
+    //directionalLight.position.set(camera.position);
 
-    boxMesh.rotation.set(xRotation, yRotation, zRotation);
+    xRotation += xSpeed;
+    yRotation += ySpeed;
+
+    boxMesh.rotation.set(xRotation, yRotation, 0.0);
+
+    boxMesh.position.z = zTranslation; 
     requestAnimationFrame(animateScene);
     renderScene();
   }
   // Render Scene - End
 
-  // Calculate Sinus - Start
-  function getSinus() {
-    if (degrees > 360) {
-      degrees = 0;
-    } else {
-      degrees += 1;
+  document.addEventListener("keydown", onDocumentKeyDown, false);
+  function onDocumentKeyDown(event) {
+    // Get the key code of the pressed key
+    var keyCode = event.which;
+    // 'L' - Toggle light
+    if (keyCode == 76) {
+      if (lightIsOn) {
+        lightIsOn = false;
+      } else {
+        lightIsOn = true;
+      }
+      boxMesh.material = boxMaterial(lightIsOn);
+      boxMesh.material.needsUpdate = true;
     }
-    return Math.sin((degrees * Math.PI) / 180);
-  }
-  // Calculate Sinus - End
+    // Cursor w
+    else if (keyCode == 87) {
+      xSpeed -= 0.01;
 
+      // Cursor s
+    } else if (keyCode == 83) {
+      xSpeed += 0.01;
+
+      // Cursor a
+    } else if (keyCode == 65) {
+      ySpeed -= 0.01;
+
+      // Cursor d
+    } else if (keyCode == 68) {
+      ySpeed += 0.01;
+    }
+
+    // Cursor +
+    else if (keyCode == 109) {
+      zTranslation -= 0.2;
+
+      // Cursor -
+    } else if (keyCode == 107) {
+      zTranslation += 0.2;
+    }
+  }
   // Window Resize Handler - Start
   window.addEventListener("resize", onWindowResize, false);
   function onWindowResize() {
@@ -91,28 +127,45 @@ export default function Tutorial6() {
 }
 
 // diceFaceMaterial - Start
-function diceFaceMaterial(){
+function boxMaterial(lightIsOn) {
   let textureLoader = new THREE.TextureLoader();
-  const materials = [
-    new THREE.MeshBasicMaterial({
-      map: textureLoader.load("/src/images/dice-1.jpg"),
-    }),
-    new THREE.MeshBasicMaterial({
-      map: textureLoader.load("/src/images/dice-2.jpg"),
-    }),
-    new THREE.MeshBasicMaterial({
-      map: textureLoader.load("/src/images/dice-3.jpg"),
-    }),
-    new THREE.MeshBasicMaterial({
-      map: textureLoader.load("/src/images/dice-4.jpg"),
-    }),
-    new THREE.MeshBasicMaterial({
-      map: textureLoader.load("/src/images/dice-5.jpg"),
-    }),
-    new THREE.MeshBasicMaterial({
-      map: textureLoader.load("/src/images/dice-6.jpg"),
-    }),
-  ];
-  return new THREE.MeshFaceMaterial(materials);
+
+  const boxColor = textureLoader.load(
+    "/src/images/brick/Bricks052_2K_Color.jpg"
+  );
+  const boxAmbient = textureLoader.load(
+    "/src/images/brick/Bricks052_2K_AmbientOcclusion.jpg"
+  );
+  const boxDisplacement = textureLoader.load(
+    "/src/images/brick/Bricks052_2K_Displacement.jpg"
+  );
+  const boxNormal = textureLoader.load(
+    "/src/images/brick/Bricks052_2K_Normal.jpg"
+  );
+  const boxRoughness = textureLoader.load(
+    "/src/images/brick/Bricks052_2K_Roughness.jpg"
+  );
+  let material;
+  if (lightIsOn) {
+    material = new THREE.MeshPhongMaterial({
+      color: 0xffffff,
+      map: boxColor,
+      normalMap: boxNormal,
+      displacementMap: boxDisplacement,
+      displacementScale: 0,
+      aoMap: boxAmbient,
+      aoMapIntensity: lightIsOn ? 0 : 10,
+      reflectivity: 0,
+      specularMap: boxColor,
+      bumpMap: boxRoughness,
+    });
+  } else {
+    let textureLoader = new THREE.TextureLoader();
+    material = new THREE.MeshBasicMaterial({
+      map: textureLoader.load("/src/images/brick/Bricks052_2K_Color.jpg"),
+    });
+  }
+
+  return material;
 }
 // diceFaceMaterial - End
